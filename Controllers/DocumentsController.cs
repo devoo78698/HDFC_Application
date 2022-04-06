@@ -16,7 +16,7 @@ namespace hdfc_loan2_app.Controllers
         {
             _context = context;
         }
-
+        
         [HttpGet]
         [Route("getbyid/{appid}")]
         public IActionResult GetbyID(string appid)
@@ -65,7 +65,7 @@ namespace hdfc_loan2_app.Controllers
             }
             else
             {
-                return Ok("Wrong AppID");
+                return Ok("Wrong Application ID");
             }
            
             
