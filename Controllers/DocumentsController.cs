@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.IO;
 using System.Linq;
+using System.Web.Http;
 
 namespace hdfc_loan2_app.Controllers
 {
-    [Route("api/[controller]")]
+    [Microsoft.AspNetCore.Mvc.Route("api/[controller]")]
     [ApiController]
     public class DocumentsController : ControllerBase
     {
@@ -16,59 +17,65 @@ namespace hdfc_loan2_app.Controllers
         {
             _context = context;
         }
-        
-        [HttpGet]
-        [Route("getbyid/{appid}")]
-        public IActionResult GetbyID(string appid)
+
+        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [Microsoft.AspNetCore.Mvc.Route("getbyid")]
+        public IActionResult GetbyID([FromUri] string[] appid)
         {
-            var doc = _context.Loan2DocumentsTest.Where(x => x.Appid == appid).FirstOrDefault();
-            string applicationid = doc.Appid;
-
-            if(doc.Appid == appid)
+            foreach (string id in appid)
             {
-                DirectoryInfo hdDirectoryInWhichToSearch = new DirectoryInfo(@"G:\hdfc_loan2_testapplications");
-                FileInfo[] filesInDir = hdDirectoryInWhichToSearch.GetFiles("A123*", SearchOption.AllDirectories);
-
-                foreach (FileInfo foundFile in filesInDir)
-                {
-                    string fullName = foundFile.FullName;
-                    string Name = foundFile.Name;
 
 
-                    string fileName = Name;
-                    string sourcePath = fullName;
-                    string targetPath = @"G:\hdfc_copy";
+                var doc = _context.Loan2DocumentsTest.Where(x => x.Appid == id).FirstOrDefault();
+                string applicationid = doc.Appid;
 
+                if (doc.Appid == id) 
+                { 
+                    DirectoryInfo hdDirectoryInWhichToSearch = new DirectoryInfo(@"G:\hdfc_loan2_testapplications");
+                    FileInfo[] filesInDir = hdDirectoryInWhichToSearch.GetFiles(id + "*", SearchOption.AllDirectories);
 
-                    string sourceFile = System.IO.Path.Combine(sourcePath);
-                    string destFile = System.IO.Path.Combine(targetPath, fileName);
-
-
-                    System.IO.File.Copy(sourceFile, destFile, true);
-
-
-                    var logs = new Loan2DocumentsTestLog
+                    foreach (FileInfo foundFile in filesInDir)
                     {
-                        Appid = applicationid,
-                        Filepath = sourcePath,
-                        DestinationPath = targetPath,
-                        UploadDate = DateTime.Now,
-                    };
-
-                    _context.Loan2DocumentsTestLog.Add(logs);
-                    _context.SaveChanges();
+                        string fullName = foundFile.FullName;
+                        string Name = foundFile.Name;
 
 
+                        string fileName = Name;
+                        string sourcePath = fullName;
+                        string targetPath = @"G:\hdfc_copy";
 
+
+                        string sourceFile = System.IO.Path.Combine(sourcePath);
+                        string destFile = System.IO.Path.Combine(targetPath, fileName);
+
+
+                        System.IO.File.Copy(sourceFile, destFile, true);
+
+
+                        var logs = new Loan2DocumentsTestLog
+                        {
+                            Appid = applicationid,
+                            Filepath = sourcePath,
+                            DestinationPath = targetPath,
+                            UploadDate = DateTime.Now,
+                        };
+
+                        _context.Loan2DocumentsTestLog.Add(logs);
+                        _context.SaveChanges();
+
+
+
+                    }
+                    
                 }
-                return Ok("Success");
+                else
+                {
+                    return Ok("Wrong Application ID");
+                }
             }
-            else
-            {
-                return Ok("Wrong Application ID");
-            }
-           
-            
+
+            return Ok("Success");
+
         }
     }
 }
